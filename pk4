@@ -1,0 +1,45 @@
+from PIL import Image
+import os
+import time
+from multiprocessing import Pool
+
+input_folder = "images"
+output_folder = "processed"
+
+os.makedirs(output_folder, exist_ok=True)
+
+
+def process_image(filename):
+    path = os.path.join(input_folder, filename)
+
+    img = Image.open(path)
+
+    img = img.rotate(-90, expand=True)
+    img = img.resize((800, 600), Image.LANCZOS)
+    img = img.convert("L")
+
+    out_path = os.path.join(output_folder, "out_" + filename)
+    img.save(out_path)
+
+
+files = [f for f in os.listdir(input_folder) if f.endswith(".jpg")]
+
+
+start = time.time()
+
+for file in files:
+    process_image(file)
+
+end = time.time()
+
+print("Последовательная обработка:", round(end - start, 2), "сек")
+
+
+start = time.time()
+
+with Pool() as pool:
+    pool.map(process_image, files)
+
+end = time.time()
+
+print("Параллельная обработка:", round(end - start, 2), "сек")
